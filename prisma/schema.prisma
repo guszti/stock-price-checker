@@ -13,3 +13,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Symbol {
+  @@map("symbol")
+
+  id    Int     @default(autoincrement()) @id
+  name String  @unique
+  createdAt    DateTime @db.Timestamptz(1) @default(now()) @map("created_at")
+
+  SymbolPrice SymbolPrice[]
+}
+
+model SymbolPrice {
+  @@map("symbol_price")
+
+  id        Int      @default(autoincrement()) @id
+  symbolId  Int @map("symbol_id")
+  createdAt DateTime @db.Timestamptz(1)  @default(now()) @map("created_at")
+
+  symbol    Symbol    @relation(fields: [symbolId], references: [id])
+}

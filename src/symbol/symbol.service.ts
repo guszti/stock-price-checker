@@ -1,36 +1,19 @@
 import { HttpException, Injectable } from "@nestjs/common";
 import { CronJob } from "cron";
-import { SymbolPriceResponse } from "./finnhub.interface";
-import { ConfigService } from "@nestjs/config";
 import { SchedulerRegistry } from "@nestjs/schedule";
 import { DatabaseService } from "../database/database.service";
+import { FinnhubService } from "src/finnhub/finnhub.service";
 
 @Injectable()
 export class SymbolService {
     constructor(
-        private configService: ConfigService,
+        private finnhubService: FinnhubService,
         private schedulerRegistry: SchedulerRegistry,
         private dataBaseService: DatabaseService,
     ) {}
 
-    private async fetchPricesForSymbol(
-        symbol: string,
-    ): Promise<SymbolPriceResponse> {
-        const response = await fetch(
-            `https://finnhub.io/api/v1/quote?symbol=${symbol}`,
-            {
-                headers: {
-                    "X-Finnhub-Token":
-                        this.configService.get<string>("FINNHUB_API_KEY"),
-                },
-            },
-        );
-
-        return response.json();
-    }
-
     private async saveSymbolPrice(symbol: string) {
-        const prices = await this.fetchPricesForSymbol(symbol);
+        const prices = await this.finnhubService.fetchPricesForSymbol(symbol);
 
         return this.dataBaseService.symbolPrice.create({
             data: {

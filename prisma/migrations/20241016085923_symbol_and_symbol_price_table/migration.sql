@@ -10,6 +10,7 @@ CREATE TABLE "symbol" (
 -- CreateTable
 CREATE TABLE "symbol_price" (
     "id" SERIAL NOT NULL,
+    "price" INTEGER NOT NULL,
     "symbol_id" INTEGER NOT NULL,
     "created_at" TIMESTAMPTZ(1) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

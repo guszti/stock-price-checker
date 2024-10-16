@@ -1,11 +1,15 @@
 import { Module } from "@nestjs/common";
-import { SymbolController } from "./symbol.controller";
 import { ConfigModule } from "@nestjs/config";
-import { SymbolService } from "./symbol.service";
+import { ScheduleModule } from "@nestjs/schedule";
+import { SymbolModule } from "./symbol/symbol.module";
+import { DatabaseModule } from "./database/database.module";
 
 @Module({
-    imports: [ConfigModule.forRoot()],
-    controllers: [SymbolController],
-    providers: [SymbolService],
+    imports: [
+        SymbolModule,
+        ConfigModule.forRoot({ isGlobal: true }),
+        ScheduleModule.forRoot(),
+        DatabaseModule,
+    ],
 })
 export class AppModule {}

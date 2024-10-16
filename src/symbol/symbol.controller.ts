@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Put } from "@nestjs/common";
+import { Controller, Get, HttpCode, Param, Put } from "@nestjs/common";
 import { SymbolService } from "./symbol.service";
 
 @Controller("stock")
@@ -7,11 +7,12 @@ export class SymbolController {
 
     @Get("/:symbol")
     async getSymbolData(@Param("symbol") symbol: string) {
-        return "symbol data";
+        return await this.symbolService.getMovingAverageForSymbol(symbol);
     }
 
     @Put("/:symbol")
+    @HttpCode(204)
     async startPriceCheck(@Param("symbol") symbol: string) {
-        return this.symbolService.startPriceTracking("");
+        return await this.symbolService.startPriceTrackingForSymbol(symbol);
     }
 }

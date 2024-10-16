@@ -15,24 +15,32 @@ export class SymbolService {
     private async saveSymbolPrice(symbol: string) {
         const prices = await this.finnhubService.fetchPricesForSymbol(symbol);
 
-        return this.dataBaseService.symbolPrice.create({
-            data: {
-                price: prices.c,
-                symbol: {
-                    connect: { name: symbol },
+        try {
+            return this.dataBaseService.symbolPrice.create({
+                data: {
+                    price: prices.c,
+                    symbol: {
+                        connect: { name: symbol },
+                    },
                 },
-            },
-        });
+            });
+        } catch (e) {
+            throw new HttpException("Failed to save symbol price", 500);
+        }
     }
 
     private saveSymbolIfDoesntExist(symbol: string) {
         const nameColumn = { name: symbol };
 
-        return this.dataBaseService.symbol.upsert({
-            where: nameColumn,
-            update: nameColumn,
-            create: nameColumn,
-        });
+        try {
+            return this.dataBaseService.symbol.upsert({
+                where: nameColumn,
+                update: nameColumn,
+                create: nameColumn,
+            });
+        } catch (e) {
+            throw new HttpException("Failed to save symbol", 500);
+        }
     }
 
     async startPriceTrackingForSymbol(symbol: string) {
@@ -65,15 +73,21 @@ export class SymbolService {
     }
 
     async getMovingAverageForSymbol(symbol: string) {
-        const lastTenPrices = await this.dataBaseService.symbolPrice.findMany({
-            where: { symbol: { name: symbol } },
-            select: {
-                price: true,
-                createdAt: true,
-            },
-            orderBy: { createdAt: "desc" },
-            take: 10,
-        });
+        let lastTenPrices: { price: number; createdAt: Date }[];
+
+        try {
+            lastTenPrices = await this.dataBaseService.symbolPrice.findMany({
+                where: { symbol: { name: symbol } },
+                select: {
+                    price: true,
+                    createdAt: true,
+                },
+                orderBy: { createdAt: "desc" },
+                take: 10,
+            });
+        } catch (e) {
+            throw new HttpException("Failed to retrieve price data", 500);
+        }
 
         if (!lastTenPrices.length) {
             return "No data yet";

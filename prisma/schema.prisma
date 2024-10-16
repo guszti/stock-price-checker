@@ -27,7 +27,7 @@ model SymbolPrice {
   @@map("symbol_price")
 
   id        Int      @default(autoincrement()) @id
-  price     Int
+  price     Float
   symbolId  Int @map("symbol_id")
   createdAt DateTime @db.Timestamptz(1)  @default(now()) @map("created_at")
 

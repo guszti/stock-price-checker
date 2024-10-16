@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { CronJob } from "cron";
 import { SymbolPriceResponse } from "./finnhub.interface";
 import { ConfigService } from "@nestjs/config";
@@ -53,6 +53,19 @@ export class SymbolService {
     }
 
     async startPriceTrackingForSymbol(symbol: string) {
+        const jobName = `${symbol}_price_check`;
+        const isAlreadyRunning = this.schedulerRegistry.doesExist(
+            "cron",
+            jobName,
+        );
+
+        if (isAlreadyRunning) {
+            throw new HttpException(
+                `A job for ${symbol} is already running`,
+                400,
+            );
+        }
+
         await this.saveSymbolIfDoesntExist(symbol);
 
         const job = new CronJob(`* * * * *`, async () => {
@@ -61,7 +74,7 @@ export class SymbolService {
             await this.saveSymbolPrice(symbol);
         });
 
-        this.schedulerRegistry.addCronJob(`${symbol}_price_check`, job);
+        this.schedulerRegistry.addCronJob(jobName, job);
 
         job.start();
 
@@ -78,6 +91,20 @@ export class SymbolService {
             orderBy: { createdAt: "desc" },
             take: 10,
         });
-        return lastTenPrices;
+
+        if (!lastTenPrices.length) {
+            return "No data yet";
+        }
+
+        let priceSum = 0;
+
+        lastTenPrices.forEach((symbolPrice) => (priceSum += symbolPrice.price));
+
+        return {
+            currentPrice: lastTenPrices[0].price,
+            // there will be less then 10 prices at the beginning
+            lastUpdated: lastTenPrices[0].createdAt,
+            movingAverage: priceSum / lastTenPrices.length,
+        };
     }
 }

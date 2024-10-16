@@ -99,8 +99,8 @@ export class SymbolService {
 
         return {
             currentPrice: lastTenPrices[0].price,
-            // there will be less then 10 prices at the beginning
             lastUpdated: lastTenPrices[0].createdAt,
+            // there will be less then 10 prices at the beginning
             movingAverage: priceSum / lastTenPrices.length,
         };
     }

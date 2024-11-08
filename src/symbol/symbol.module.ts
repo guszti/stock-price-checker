@@ -1,11 +1,12 @@
 import { Module } from "@nestjs/common";
 import { SymbolController } from "./symbol.controller";
 import { SymbolService } from "./symbol.service";
-import { DatabaseService } from "../database/database.service";
-import { FinnhubService } from "src/finnhub/finnhub.service";
+import { DatabaseModule } from "../database/database.module";
+import { FinnhubModule } from "../finnhub/finnhub.module";
 
 @Module({
+    imports: [DatabaseModule, FinnhubModule],
     controllers: [SymbolController],
-    providers: [SymbolService, DatabaseService, FinnhubService],
+    providers: [SymbolService],
 })
 export class SymbolModule {}
